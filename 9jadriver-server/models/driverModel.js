@@ -17,8 +17,7 @@ const DriverSchema = new Schema({
     unique: true
   },
   password: {
-    type: String,
-    required: true
+    type: String
   },
   phoneNumber: {
     type: Number,

@@ -1,7 +1,13 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const keys = require("../config/keys");
-const passport = require("passport");
+// const keys = require("../config/keys");
+// const passport = require("passport");
+const Vonage = require('@vonage/server-sdk');
+
+const vonage = new Vonage({
+  apiKey: process.env.NEXMO_API_KEY,
+  apiSecret: process.env.NEXMO_API_SECRET,
+});
 
 // Load input validation
 const validateRegisterInput = require("../validation/register");
@@ -23,27 +29,29 @@ exports.register = async (req, res) => {
       return res.status(400).json(errors);
     }
     
-    Driver.findOne({ email: req.body.email }).then(driver => {
+    await Driver.findOne({ email: req.body.email }).then(driver => {
       if (driver) {
         return res.status(400).json({ email: "Email already exists" });
       } else {
         const newDriver = new Driver({
-          name: req.body.name,
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
           email: req.body.email,
-          password: req.body.password
+          password: req.body.password,
+          phoneNumber: req.body.phoneNumber
         });
         
-        // Hash password before saving in database
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(newDriver.password, salt, (err, hash) => {
-            if (err) throw err;
-            newDriver.password = hash;
-            newDriver
-            .save()
-            .then(driver => res.json(driver))
-            .catch(err => console.log(err));
-          });
-        });
+        // // Hash password before saving in database
+        // bcrypt.genSalt(10, (err, salt) => {
+        //   bcrypt.hash(newDriver.password, salt, (err, hash) => {
+        //     if (err) throw err;
+        //     newDriver.password = hash;
+        //     newDriver
+        //     .save()
+        //     .then(driver => res.json(driver))
+        //     .catch(err => console.log(err));
+        //   });
+        // });
       }
     });
 }
@@ -61,50 +69,57 @@ exports.login = async (req, res) => {
       return res.status(400).json(errors);
     }
     
-    const { email, password } = req.body;
+    const { phoneNumber } = req.body;
     
-    // Find driver by email
-    Driver.findOne({ email }).then(driver => {
-      // Check if driver doesn't exists
+    // Find driver by phone number
+    await Driver.findOne({ phoneNumber }).then(driver => {
+      // Check if driver doesn't exists and verify that the client has included the `number` property in their JSON body
+      // if (!driver) {
+      //   return res.status(404).json({ numbernotfound: "Phone Number not found. You must supply a `number` prop to send the request to" });
+      // }
+      console.log(driver)
       if (!driver) {
-        return res.status(404).json({ emailnotfound: "Email not found" });
+        return res.status(404).json({ numbernotfound: "Phone Number not found. You must supply a registered `number` prop to send the request to" });
       }
-  
-      // Check password
-      bcrypt.compare(password, driver.password).then(isMatch => {
-        if (isMatch) {
-          // Driver matched
-          // Create JWT Payload
-          const payload = {
-            id: driver._id,
-            name: driver.name
-          };
-          
-          // Sign token
-          jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            {
-              expiresIn: 31556926 // 1 year in seconds
-            },
-            (err, token) => {
-              res.json({
-                success: true,
-                id: driver._id,
-                name: driver.name,
-                email: driver.email,
-                isAdmin: driver.isAdmin,
-                token: `Bearer ${token}`
-              });
-            }
-            );
-          } else {
-            return res
-            .status(401)
-            .json({ passwordincorrect: "Password incorrect" });
-          }
-        });
+
+      // Send the request to Vonage's servers to Generate OTP
+    vonage.verify.request({
+      number: req.body.phoneNumber,
+      brand: '9jaDriver',
+      code_length: '6'
+    }, (err, result) => {
+      if (err) {
+          // If there was an error, return it to the client
+          console.log(err)
+          return res.status(500).send(err.error_text);
+      }
+      console.log(result)
+      // Otherwise, send back the request id. 
+      const requestId = result.request_id;
+      console.log('request_id', requestId);
+      console.log(`vonage Verify`)
+      res.send({requestId});
     });
+  });
+}
+
+exports.verify = async (req, res) => {
+  // We require clients to submit a request id (for identification) and an OTP code (to check)
+  if (!req.body.requestId || !req.body.otp) {
+    return res.status(400).send({message: "You must supply an `OTP` and `request_id` prop to send the request to"})
+  }
+  // Run the check against Vonage's servers
+  await vonage.verify.check({
+      request_id: req.body.requestId,
+      code: req.body.otp
+  }, (err, result) => {
+      if (err) {
+        console.log(err)
+        return res.status(500).send(err.error_text);
+      }
+      console.log(result)
+      res.send(result);
+  });
 }
 
 

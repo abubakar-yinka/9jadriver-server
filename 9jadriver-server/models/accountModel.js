@@ -4,7 +4,7 @@ const AccountSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId, 
     required: true,
-    ref: "users"
+    ref: "driver"
   },
   accessToken: {
     type: String,

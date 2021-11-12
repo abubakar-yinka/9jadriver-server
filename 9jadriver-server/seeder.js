@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
-const User = require('./models/userModel')
+const Driver = require('./models/driverModel')
 const Account = require('./models/accountModel')
-const users = require('./data/users')
+const drivers = require('./data/drivers')
 const connectDB = require('./config/db')
 
 dotenv.config()
@@ -11,17 +11,17 @@ connectDB()
 
 const importData = async () => {
     try {
-        await User.deleteMany()
+        await Driver.deleteMany()
         await Account.deleteMany()
-        const createdUsers = await User.insertMany(users)
-        const adminUsers = createdUsers[0]._id
+        const createdDrivers = await Driver.insertMany(drivers)
+        const adminDrivers = createdDrivers[0]._id
 
         // const userAccount = Account.map(account => {
         //     return {...account, userId: adminUsers}
         // })
         // await Account.insertMany(userAccount)
 
-        console.log(`Data Imported. Admin users: ${adminUsers}`)
+        // console.log(`Data Imported. Admin users: ${adminUsers}`)
         process.exit()
     } catch (error) {
         console.error(`${error}`)
@@ -31,7 +31,7 @@ const importData = async () => {
 
 const destroyData = async () => {
     try {
-        await User.deleteMany()
+        await Driver.deleteMany()
         await Account.deleteMany()
 
         console.log('Data Destroyed')
