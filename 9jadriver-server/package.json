@@ -1,0 +1,48 @@
+{
+  "name": "ui-campus-wallet",
+  "version": "1.0.0",
+  "description": "Campus E-Wallet Application",
+  "main": "server.js",
+  "scripts": {
+    "client-install": "npm install --prefix client",
+    "start": "node server.js",
+    "server": "nodemon server.js",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "data:import": "node seeder.js",
+    "data:destroy": "node seeder.js -d",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abubakar-yinka/ui-campus-wallet.git"
+  },
+  "keywords": [
+    "Fintech",
+    "UI",
+    "Hackathon",
+    "E-wallet",
+    "Campus",
+    "Wallet"
+  ],
+  "author": "Abubakar Ibrahim",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/abubakar-yinka/ui-campus-wallet/issues"
+  },
+  "homepage": "https://github.com/abubakar-yinka/ui-campus-wallet#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "concurrently": "^6.3.0",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "is-empty": "^1.2.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.0.12",
+    "nodemon": "^2.0.14",
+    "passport": "^0.5.0",
+    "passport-jwt": "^4.0.0",
+    "validator": "^13.6.0"
+  }
+}
