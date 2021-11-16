@@ -4,15 +4,17 @@ const connectDB = require('./config/db')
 // const mongoose = require("mongoose");
 const passport = require("passport");
 const path = require('path');
+const cors = require('cors');
+dotenv.config()
 
 const drivers = require("./routes/api/drivers");
 
-dotenv.config()
 
 connectDB()
 
 const app = express();
 
+app.use(cors());
 // Express-Bodyparser middleware
 app.use(
   express.urlencoded({
