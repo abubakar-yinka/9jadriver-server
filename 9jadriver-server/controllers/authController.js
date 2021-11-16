@@ -1,15 +1,5 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-// const keys = require("../config/keys");
-// const passport = require("passport");
-// const Vonage = require('@vonage/server-sdk');
-
-// const vonage = new Vonage({
-//   // apiKey: process.env.NEXMO_API_KEY,
-//   apiKey: "bc1c3abb",
-//   // apiSecret: process.env.NEXMO_API_SECRET,
-//   apiSecret: "SFkhRBMrP3xnfuM3",
-// });
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
